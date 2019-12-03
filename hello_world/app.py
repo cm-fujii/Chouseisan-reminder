@@ -62,7 +62,8 @@ def post_slack(title: str, detail: str) -> None:
     # https://api.slack.com/docs/message-formatting
     # https://api.slack.com/docs/messages/builder
     payload = {
-        'icon_emoji': ':umbrella:',
+        # https://www.webfx.com/tools/emoji-cheat-sheet/
+        'icon_emoji': ':jack_o_lantern:',
         'attachments': [
             {
                 'title': '調整さん',
