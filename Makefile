@@ -1,4 +1,4 @@
-BUCKET_NAME := s3://cm-fujii.genki-chouseisan-reminder-deploy-bucket
+BUCKET_NAME := cm-fujii.genki-chouseisan-reminder-deploy-bucket
 STACK_NAME := Chouseisan-Reminder-Stack
 PARAMETER_STORE_KEY := /Slack/INCOMING_WEBHOOK_URL/misc-join-201901/message
 
