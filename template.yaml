@@ -24,3 +24,8 @@ Resources:
           Type: Schedule
           Properties:
             Schedule: cron(0 0 1 * ? *) # 日本時間で毎月1日のAM9時
+
+  ChouseisanReminderFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${ChouseisanReminderFunction}"
