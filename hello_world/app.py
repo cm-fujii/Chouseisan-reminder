@@ -26,7 +26,7 @@ def get_candidate_date() -> List[datetime.date]:
     """候補日のリストを取得する"""
     candidate_date = []
     # 8〜24日から候補日を決める
-    for target_day in range(8, 24):
+    for target_day in range(8, 25):
         target_date = get_target_date(target_day)
         if is_working_day(target_date):
             # 平日のみ候補日とする
