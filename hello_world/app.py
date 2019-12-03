@@ -1,42 +1,85 @@
-import json
+import os
+import requests
+import locale
+import jpholiday
+from datetime import date, datetime
+from typing import List, Tuple
 
-# import requests
 
+INCOMMING_WEBHOOK_URL = os.environ['INCOMMING_WEBHOOK_URL']
+
+# date.strftime('%a') で日本語取得するために設定する
+# https://docs.python.org/ja/3.7/library/locale.html
+locale.setlocale(locale.LC_TIME, 'ja_JP.UTF-8')
 
 def lambda_handler(event, context):
-    """Sample pure Lambda function
+    candidate_date = get_candidate_date()
 
-    Parameters
-    ----------
-    event: dict, required
-        API Gateway Lambda Proxy Input Format
+    (title, message) = create_message(candidate_date)
+    print(title, message)
 
-        Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
+    post_slack(title, message)
 
-    context: object, required
-        Lambda Context runtime methods and attributes
 
-        Context doc: https://docs.aws.amazon.com/lambda/latest/dg/python-context-object.html
+def get_candidate_date() -> List[datetime.date]:
+    """候補日のリストを取得する"""
+    candidate_date = []
+    # 8〜24日から候補日を決める
+    for target_day in range(8, 24):
+        target_date = get_target_date(target_day)
+        if is_working_day(target_date):
+            # 平日のみ候補日とする
+            candidate_date.append(target_date)
+    return candidate_date
 
-    Returns
-    ------
-    API Gateway Lambda Proxy Output Format: dict
+def is_working_day(target: datetime.date) -> bool:
+    """指定した日付が休日かどうか判定する"""
+    if target.weekday() >= 5:
+        # 土曜 or 日曜
+        return False
+    if jpholiday.is_holiday(target):
+        # 祝日
+        return False
+    return True
 
-        Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
-    """
+def get_target_date(target: int) -> datetime.date:
+    """指定した日から日付を取得する"""
+    return date.today().replace(day=target)
 
-    # try:
-    #     ip = requests.get("http://checkip.amazonaws.com/")
-    # except requests.RequestException as e:
-    #     # Send some context about this error to Lambda Logs
-    #     print(e)
+def create_message(candidate_date: List[datetime.date]) -> Tuple[str, str]:
+    """SlackにPOSTするメッセージを作成する"""
+    detail = []
+    for item in candidate_date:
+        detail.append(item.strftime('%m/%d(%a) 12:00-13:00'))
+    return (
+        '次回の調整さんを作りましょう〜。',
+        '\n'.join(detail)
+    )
 
-    #     raise e
-
-    return {
-        "statusCode": 200,
-        "body": json.dumps({
-            "message": "hello world",
-            # "location": ip.text.replace("\n", "")
-        }),
+def post_slack(title: str, detail: str) -> None:
+    """SlackにメッセージをPOSTする"""
+    # https://api.slack.com/incoming-webhooks
+    # https://api.slack.com/docs/message-formatting
+    # https://api.slack.com/docs/messages/builder
+    payload = {
+        'icon_emoji': ':umbrella:',
+        'attachments': [
+            {
+                'title': '調整さん',
+                'title_link': 'https://chouseisan.com/',
+                'color': '#36a64f',
+                'pretext': title,
+                'text': detail
+            }
+        ]
     }
+ 
+    url = f'https://{INCOMMING_WEBHOOK_URL}'
+
+    # http://requests-docs-ja.readthedocs.io/en/latest/user/quickstart/
+    try:
+        response = requests.post(url, data=json.dumps(payload))
+    except requests.exceptions.RequestException as e:
+        print(e)
+    else:
+        print(response.status_code)
