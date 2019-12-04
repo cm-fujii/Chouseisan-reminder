@@ -52,10 +52,18 @@ def create_message(candidate_date: List[datetime.date]) -> Tuple[str, str]:
     detail = []
     for item in candidate_date:
         detail.append(item.strftime('%m/%d(%a) 12:00-13:00'))
+
+    vol = get_vol(date(2019, 1,1 ), date.today())
+
     return (
         '次回の調整さんを作りましょう〜。',
+        f'201901JOIN雑談会Vol.{vol}\n\n' +
         '\n'.join(detail)
     )
+
+def get_vol(base: datetime.date, target: datetime.date) -> int:
+    """次回開催の番号を取得する"""
+    return (target.year - base.year) * 12 + target.month - base.month - 1
 
 def post_slack(title: str, detail: str) -> None:
     """SlackにメッセージをPOSTする"""
