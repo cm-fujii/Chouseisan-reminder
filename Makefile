@@ -16,3 +16,6 @@ deploy:
 		--capabilities CAPABILITY_NAMED_IAM \
 		--no-fail-on-empty-changeset \
 		--parameter-overrides ChouseisanNotifySlackUrl=$(PARAMETER_STORE_KEY)
+
+test:
+	INCOMMING_WEBHOOK_URL=test_url python -m pytest tests/ -v

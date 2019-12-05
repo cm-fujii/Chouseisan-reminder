@@ -14,7 +14,8 @@ INCOMMING_WEBHOOK_URL = os.environ['INCOMMING_WEBHOOK_URL']
 locale.setlocale(locale.LC_TIME, 'ja_JP.UTF-8')
 
 def lambda_handler(event, context):
-    if is_notify(date.today()) is False:
+    # 最初の平日以外なら通知しない
+    if is_first_working_day(date.today()) is False:
         return
 
     # 候補日のリストを取得する
@@ -24,13 +25,16 @@ def lambda_handler(event, context):
     # Slackに通知する
     post_slack(title, message)
 
-def is_notify(today: datetime.date) -> bool:
-    """通知してよいか判定する"""
-    yesterday = today - timedelta(days=1)
-
-    # 今日が平日、かつ、昨日が休日、のみ通知する
-    if is_working_day(today) and not is_working_day(yesterday):
-        return True
+def is_first_working_day(today: datetime.date) -> bool:
+    """指定日がその月の最初の平日か判定する"""
+    for target_day in range(1, today.day + 1):
+        if is_working_day(today.replace(day=target_day)):
+            if target_day == today.day:
+                # その月で最初の平日である
+                return True
+            # その月で2回目以降の平日である
+            return False
+    # 平日ではない
     return False
 
 def get_candidate_date() -> List[datetime.date]:
@@ -45,7 +49,7 @@ def get_candidate_date() -> List[datetime.date]:
     return candidate_date
 
 def is_working_day(target: datetime.date) -> bool:
-    """指定した日付が休日かどうか判定する"""
+    """指定日が休日か判定する"""
     if target.weekday() >= 5:
         # 土曜 or 日曜
         return False
