@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 jpholiday = "*"
+requests = "*"
 
 [packages]
 awscli = "*"
