@@ -23,7 +23,7 @@ Resources:
         NotifySlack:
           Type: Schedule
           Properties:
-            Schedule: cron(0 0 1 * ? *) # 日本時間で毎月1日のAM9時
+            Schedule: cron(0 0 1-7 * ? *) # 日本時間で毎月1-7日のAM9時
 
   ChouseisanReminderFunctionLogGroup:
     Type: AWS::Logs::LogGroup

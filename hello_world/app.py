@@ -3,7 +3,7 @@ import os
 import requests
 import locale
 import jpholiday
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import List, Tuple
 
 
@@ -14,13 +14,24 @@ INCOMMING_WEBHOOK_URL = os.environ['INCOMMING_WEBHOOK_URL']
 locale.setlocale(locale.LC_TIME, 'ja_JP.UTF-8')
 
 def lambda_handler(event, context):
+    if is_notify(date.today()) is False:
+        return
+
+    # 候補日のリストを取得する
     candidate_date = get_candidate_date()
-
+    # メッセージを作成する
     (title, message) = create_message(candidate_date)
-    print(title, message)
-
+    # Slackに通知する
     post_slack(title, message)
 
+def is_notify(today: datetime.date) -> bool:
+    """通知してよいか判定する"""
+    yesterday = today - timedelta(days=1)
+
+    # 今日が平日、かつ、昨日が休日、のみ通知する
+    if is_working_day(today) and not is_working_day(yesterday):
+        return True
+    return False
 
 def get_candidate_date() -> List[datetime.date]:
     """候補日のリストを取得する"""
