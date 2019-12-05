@@ -6,6 +6,23 @@ from datetime import date
 from hello_world import app
 
 @pytest.mark.parametrize(
+    'base, target, expected', [
+        (date(2019, 1, 1), date(2019, 3, 1), 1),
+        (date(2019, 1, 1), date(2019, 4, 1), 2),
+        (date(2019, 1, 1), date(2019, 5, 1), 3),
+        (date(2019, 1, 1), date(2019, 6, 1), 4),
+        (date(2019, 1, 1), date(2019, 7, 1), 5),
+        (date(2019, 1, 1), date(2019, 8, 1), 6),
+        (date(2019, 1, 1), date(2019, 9, 1), 7),
+        (date(2019, 1, 1), date(2019, 10, 1), 8),
+        (date(2019, 1, 1), date(2019, 11, 1), 9),
+        (date(2019, 1, 1), date(2019, 12, 1), 10),
+    ])
+def test_get_vol(base, target, expected):
+    actual = app.get_vol(base, target)
+    assert expected == actual
+
+@pytest.mark.parametrize(
     'target_date, expected', [
         (date(2019, 12, 1), False),
         (date(2019, 12, 2), True),
