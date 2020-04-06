@@ -29,3 +29,27 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/${ChouseisanReminderFunction}"
+
+  ChouseisanSaveDeadlineFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: chouseisan-save-deadline-function
+      CodeUri: src/save_deadline/
+      Handler: app.lambda_handler
+      Runtime: python3.7
+      Timeout: 10
+      Environment:
+        Variables:
+          TZ: Asia/Tokyo
+          INCOMMING_WEBHOOK_URL: !Ref ChouseisanNotifySlackUrl
+      Events:
+        WorkflowApi:
+          Type: Api
+          Properties:
+            Path: /reminder
+            Method: post
+
+  ChouseisanSaveDeadlineFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${ChouseisanSaveDeadlineFunction}"
