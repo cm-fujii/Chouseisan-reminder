@@ -11,7 +11,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: chouseisan-reminder-function
-      CodeUri: hello_world/
+      CodeUri: src/notify_1st_message/
       Handler: app.lambda_handler
       Runtime: python3.7
       Timeout: 10

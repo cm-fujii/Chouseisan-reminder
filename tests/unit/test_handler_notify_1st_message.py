@@ -3,7 +3,7 @@ import json
 import pytest
 
 from datetime import date
-from hello_world import app
+from src.notify_1st_message import app
 
 @pytest.mark.parametrize(
     'base, target, expected', [
