@@ -53,3 +53,8 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/${ChouseisanSaveDeadlineFunction}"
+
+Outputs:
+  SaveDeadlineApi:
+    Description: "save deadline api"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/reminder/"

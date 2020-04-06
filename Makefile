@@ -19,3 +19,8 @@ deploy:
 
 test:
 	INCOMMING_WEBHOOK_URL=test_url python -m pytest tests/ -v
+
+get-endpoint:
+	aws cloudformation describe-stacks \
+		--stack-name $(STACK_NAME) \
+		--query 'Stacks[].Outputs'
