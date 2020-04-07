@@ -36,7 +36,7 @@ def parse_timestamp(text):
     pattern = r'.+\n期限は \*(\d{4}/\d{1,2}/\d{1,2})\* です！'
     res = re.match(pattern, text)
     if res:
-        return datetime.strptime(res.group(1), '%Y/%m/%d').timestamp()
+        return int(datetime.strptime(res.group(1), '%Y/%m/%d').timestamp())
     raise ValueError
 
 
@@ -44,5 +44,5 @@ def parse_url(text):
     pattern = r'.+\n.+\n<(.+)>'
     res = re.match(pattern, text)
     if res:
-        return int(res.group(1))
+        return res.group(1)
     raise ValueError
