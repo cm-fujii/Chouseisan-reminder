@@ -1,11 +1,15 @@
+import boto3
 import json
 import logging
+import os
 import re
 
 from datetime import datetime
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+dynamodb = boto3.resource('dynamodb')
 
 def lambda_handler(event, context):
     main(event)
@@ -31,6 +35,8 @@ def main(event):
     url = parse_url(body['event']['text'])
     logger.info(f'deadline: {deadline}, url: {url}')
 
+    put_item(deadline, url)
+
 
 def parse_timestamp(text):
     pattern = r'.+\n期限は \*(\d{4}/\d{1,2}/\d{1,2})\* です！'
@@ -46,3 +52,12 @@ def parse_url(text):
     if res:
         return res.group(1)
     raise ValueError
+
+def put_item(deadline, url):
+    table_name = os.environ['REMINDER_TABLE_NAME']
+    table = dynamodb.Table(table_name)
+    res = table.put_item(Item={
+        'deadlineTimestamp': deadline,
+        'url': url
+    })
+    logger.info(res)

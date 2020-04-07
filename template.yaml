@@ -41,7 +41,9 @@ Resources:
       Environment:
         Variables:
           TZ: Asia/Tokyo
-          INCOMMING_WEBHOOK_URL: !Ref ChouseisanNotifySlackUrl
+          REMINDER_TABLE_NAME: !Ref ChouseisanReminderTable
+      Policies:
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
       Events:
         WorkflowApi:
           Type: Api
