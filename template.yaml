@@ -54,6 +54,21 @@ Resources:
     Properties:
       LogGroupName: !Sub "/aws/lambda/${ChouseisanSaveDeadlineFunction}"
 
+  ChouseisanReminderTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: chouseisan-reminder-table
+      KeySchema:
+        - AttributeName: deadlineTimestamp
+          KeyType: HASH
+      AttributeDefinitions:
+        - AttributeName: deadlineTimestamp
+          AttributeType: N
+      TimeToLiveSpecification:
+        AttributeName: deadlineTimestamp
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+
 Outputs:
   SaveDeadlineApi:
     Description: "save deadline api"
