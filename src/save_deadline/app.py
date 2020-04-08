@@ -35,8 +35,8 @@ def main(event):
     url = parse_url(body['event']['text'])
     logger.info(f'deadline: {deadline}, url: {url}')
 
-    # 当日10時をDynamoDBのTTL期限とする
-    expiration = deadline + 60*60*10
+    # 当日11時をDynamoDBのTTL期限とする
+    expiration = deadline + 60*60*11
 
     put_item(deadline, url, expiration)
 
