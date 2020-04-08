@@ -61,13 +61,13 @@ Resources:
     Properties:
       TableName: chouseisan-reminder-table
       KeySchema:
-        - AttributeName: deadlineTimestamp
+        - AttributeName: deadline
           KeyType: HASH
       AttributeDefinitions:
-        - AttributeName: deadlineTimestamp
+        - AttributeName: deadline
           AttributeType: N
       TimeToLiveSpecification:
-        AttributeName: deadlineTimestamp
+        AttributeName: expiration
         Enabled: true
       BillingMode: PAY_PER_REQUEST
 

@@ -35,13 +35,17 @@ def main(event):
     url = parse_url(body['event']['text'])
     logger.info(f'deadline: {deadline}, url: {url}')
 
-    put_item(deadline, url)
+    # 当日10時をDynamoDBのTTL期限とする
+    expiration = deadline + 60*60*10
+
+    put_item(deadline, url, expiration)
 
 
 def parse_timestamp(text):
     pattern = r'.+\n期限は \*(\d{4}/\d{1,2}/\d{1,2})\* です！'
     res = re.match(pattern, text)
     if res:
+        # 0時のunixtimeを返す
         return int(datetime.strptime(res.group(1), '%Y/%m/%d').timestamp())
     raise ValueError
 
@@ -53,11 +57,12 @@ def parse_url(text):
         return res.group(1)
     raise ValueError
 
-def put_item(deadline, url):
+def put_item(deadline, url, expiration):
     table_name = os.environ['REMINDER_TABLE_NAME']
     table = dynamodb.Table(table_name)
     res = table.put_item(Item={
-        'deadlineTimestamp': deadline,
+        'deadline': deadline,
+        'expiration': expiration,
         'url': url
     })
     logger.info(res)
