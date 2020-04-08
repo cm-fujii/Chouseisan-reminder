@@ -71,6 +71,32 @@ Resources:
         Enabled: true
       BillingMode: PAY_PER_REQUEST
 
+  ChouseisanNotifyDeadlineFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: chouseisan-notify-deadline-function
+      CodeUri: src/notify_deadline_message/
+      Handler: app.lambda_handler
+      Runtime: python3.7
+      Timeout: 10
+      Environment:
+        Variables:
+          TZ: Asia/Tokyo
+          REMINDER_TABLE_NAME: !Ref ChouseisanReminderTable
+          INCOMMING_WEBHOOK_URL: !Ref ChouseisanNotifySlackUrl
+      Policies:
+        - arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess
+      Events:
+        NotifySlack:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0 1 * * ? *) # 日本時間AM10時に毎日通知する
+
+  ChouseisanNotifyDeadlineFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${ChouseisanNotifyDeadlineFunction}"
+
 Outputs:
   SaveDeadlineApi:
     Description: "save deadline api"
