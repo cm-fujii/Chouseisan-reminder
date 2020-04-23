@@ -12,9 +12,11 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.resource('dynamodb')
 
 SLACK_WORKFLOW_USER_DEADLINE = 'reminder_misc_join_201901_workflow'
+SLACK_WORKFLOW_USER_ANNOUNCE = '同期会のお知らせ'
 
 SLACK_WORKFLOW_USERS = [
-    SLACK_WORKFLOW_USER_DEADLINE
+    SLACK_WORKFLOW_USER_DEADLINE,
+    SLACK_WORKFLOW_USER_ANNOUNCE
 ]
 
 def lambda_handler(event, context):
@@ -49,6 +51,16 @@ def main(event):
         }
         logger.info(f'item for deadline: {json.dumps(item)}')
 
+    if body['event']['username'] == SLACK_WORKFLOW_USER_ANNOUNCE:
+        # 開催日を登録する
+        announce = parse_timestamp_for_announce(body['event']['text'])
+        item = {
+            'deadline': announce,
+            'type': 'announce',
+            'expiration': announce + 60*60*11,  # 当日11時をDynamoDBのTTL期限とする
+        }
+        logger.info(f'item for announce: {json.dumps(item)}')
+
     put_item(item)
 
 
@@ -60,6 +72,13 @@ def parse_timestamp_for_deadline(text):
         return int(datetime.strptime(res.group(1), '%Y/%m/%d').timestamp())
     raise ValueError
 
+def parse_timestamp_for_announce(text):
+    pattern = r'同期会の開催日は \*(\d{4}/\d{1,2}/\d{1,2})\* です！'
+    res = re.match(pattern, text)
+    if res:
+        # 0時のunixtimeを返す
+        return int(datetime.strptime(res.group(1), '%Y/%m/%d').timestamp())
+    raise ValueError
 
 def parse_url_for_deadline(text):
     pattern = r'.+\n.+\n<(.+)>'

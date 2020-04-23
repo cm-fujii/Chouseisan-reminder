@@ -34,3 +34,22 @@ def test_parse_timestamp_for_deadline(text, expected):
 def test_parse_url_for_deadline(text, expected):
     actual = app.parse_url_for_deadline(text)
     assert expected == actual
+
+@pytest.mark.parametrize(
+    'text, expected', [
+        (
+            '同期会の開催日は *2020/02/09* です！\n\nannounced: <@ABCDEFG>',
+            1581174000
+        ),
+        (
+            '同期会の開催日は *2020/4/8* です！\n\nannounced: <@ABCDEFG>',
+            1586271600
+        ),
+        (
+            '同期会の開催日は *2020/11/22* です！\n\nannounced: <@ABCDEFG>',
+            1605970800
+        ),
+    ])
+def test_parse_timestamp_for_announce(text, expected):
+    actual = app.parse_timestamp_for_announce(text)
+    assert expected == actual
