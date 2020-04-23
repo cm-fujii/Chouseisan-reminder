@@ -31,6 +31,8 @@ def main(event):
         logger.info('No username.')
         return
 
+    # 「締切」と「開催日」が同日の場合は考慮しない（運用上なし）
+
     if body['event']['username'] == SLACK_WORKFLOW_USER_DEADLINE:
         # 調整さんの締切とURLを登録する
         deadline_timestamp = parse_timestamp_for_deadline(body['event']['text'])
