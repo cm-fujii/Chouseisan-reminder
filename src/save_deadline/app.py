@@ -14,10 +14,6 @@ dynamodb = boto3.resource('dynamodb')
 SLACK_WORKFLOW_USER_DEADLINE = 'reminder_misc_join_201901_workflow'
 SLACK_WORKFLOW_USER_ANNOUNCE = '同期会のお知らせ'
 
-SLACK_WORKFLOW_USERS = [
-    SLACK_WORKFLOW_USER_DEADLINE,
-    SLACK_WORKFLOW_USER_ANNOUNCE
-]
 
 def lambda_handler(event, context):
     main(event)
@@ -35,33 +31,30 @@ def main(event):
         logger.info('No username.')
         return
 
-    if body['event']['username'] not in SLACK_WORKFLOW_USERS:
-        logger.info('No workflow message.')
-        return
-
     if body['event']['username'] == SLACK_WORKFLOW_USER_DEADLINE:
         # 調整さんの締切とURLを登録する
-        deadline = parse_timestamp_for_deadline(body['event']['text'])
+        deadline_timestamp = parse_timestamp_for_deadline(body['event']['text'])
         url = parse_url_for_deadline(body['event']['text'])
         item = {
-            'deadline': deadline,
+            'deadline': deadline_timestamp,
             'type': 'deadline',
-            'expiration': deadline + 60*60*11,  # 当日11時をDynamoDBのTTL期限とする
+            'expiration': deadline_timestamp + 60*60*11,  # 当日11時をDynamoDBのTTL期限とする
             'url': url
         }
         logger.info(f'item for deadline: {json.dumps(item)}')
-
-    if body['event']['username'] == SLACK_WORKFLOW_USER_ANNOUNCE:
+        put_item(item)
+    elif body['event']['username'] == SLACK_WORKFLOW_USER_ANNOUNCE:
         # 開催日を登録する
-        announce = parse_timestamp_for_announce(body['event']['text'])
+        announce_timestamp = parse_timestamp_for_announce(body['event']['text'])
         item = {
-            'deadline': announce,
+            'deadline': announce_timestamp,
             'type': 'announce',
-            'expiration': announce + 60*60*11,  # 当日11時をDynamoDBのTTL期限とする
+            'expiration': announce_timestamp + 60*60*11,  # 当日11時をDynamoDBのTTL期限とする
         }
         logger.info(f'item for announce: {json.dumps(item)}')
-
-    put_item(item)
+        put_item(item)
+    else:
+        logger.info('No workflow message.')
 
 
 def parse_timestamp_for_deadline(text):
