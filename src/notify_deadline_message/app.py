@@ -25,8 +25,8 @@ def lambda_handler(event, context):
     if remind_data is None:
         return
 
-    # Slackに通知する
-    post_slack(remind_data)
+    message = create_message(remind_data)
+    post_slack(message)
 
 
 def get_today():
@@ -50,26 +50,34 @@ def get_remind_data(deadline):
         return res.get('Item', None)
 
 
-def post_slack(remind_data):
+def create_message(remind_data):
     # https://api.slack.com/incoming-webhooks
     # https://api.slack.com/docs/message-formatting
     # https://api.slack.com/docs/messages/builder
-    payload = {
-        # https://www.webfx.com/tools/emoji-cheat-sheet/
-        'icon_emoji': ':bangbang:',
-        'text': '<!here> 今日が締切です！！　記入お願いします！\n',
-        'attachments': [
-            {
-                'text': remind_data['url']
-            }
-        ]
-    }
+    # https://www.webfx.com/tools/emoji-cheat-sheet/
+    if remind_data['type'] == 'deadline':
+        return {
+            'icon_emoji': ':bangbang:',
+            'text': '<!here> 今日が締切です！！　記入お願いします！\n',
+            'attachments': [
+                {
+                    'text': remind_data['url']
+                }
+            ]
+        }
+    if remind_data['type'] == 'announce':
+        return {
+            'icon_emoji': ':bell:',
+            'text': '<!here> 今日が開催日です！！\n',
+        }
+    raise AttributeError('unsupport type')
 
+def post_slack(message):
     url = f'https://{INCOMMING_WEBHOOK_URL}'
 
     # http://requests-docs-ja.readthedocs.io/en/latest/user/quickstart/
     try:
-        response = requests.post(url, data=json.dumps(payload))
+        response = requests.post(url, data=json.dumps(message))
     except requests.exceptions.RequestException as e:
         logger.error(e)
     else:
