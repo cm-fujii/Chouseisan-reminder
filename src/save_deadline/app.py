@@ -11,6 +11,12 @@ logger.setLevel(logging.INFO)
 
 dynamodb = boto3.resource('dynamodb')
 
+SLACK_WORKFLOW_USER_DEADLINE = 'reminder_misc_join_201901_workflow'
+
+SLACK_WORKFLOW_USERS = [
+    SLACK_WORKFLOW_USER_DEADLINE
+]
+
 def lambda_handler(event, context):
     main(event)
     return {
@@ -27,21 +33,26 @@ def main(event):
         logger.info('No username.')
         return
 
-    if 'reminder_misc_join_201901_workflow' != body['event']['username']:
+    if body['event']['username'] not in SLACK_WORKFLOW_USERS:
         logger.info('No workflow message.')
         return
 
-    deadline = parse_timestamp(body['event']['text'])
-    url = parse_url(body['event']['text'])
-    logger.info(f'deadline: {deadline}, url: {url}')
+    if body['event']['username'] == SLACK_WORKFLOW_USER_DEADLINE:
+        # 調整さんの締切とURLを登録する
+        deadline = parse_timestamp_for_deadline(body['event']['text'])
+        url = parse_url_for_deadline(body['event']['text'])
+        item = {
+            'deadline': deadline,
+            'type': 'deadline',
+            'expiration': deadline + 60*60*11,  # 当日11時をDynamoDBのTTL期限とする
+            'url': url
+        }
+        logger.info(f'item for deadline: {json.dumps(item)}')
 
-    # 当日11時をDynamoDBのTTL期限とする
-    expiration = deadline + 60*60*11
-
-    put_item(deadline, url, expiration)
+    put_item(item)
 
 
-def parse_timestamp(text):
+def parse_timestamp_for_deadline(text):
     pattern = r'.+\n期限は \*(\d{4}/\d{1,2}/\d{1,2})\* です！'
     res = re.match(pattern, text)
     if res:
@@ -50,19 +61,15 @@ def parse_timestamp(text):
     raise ValueError
 
 
-def parse_url(text):
+def parse_url_for_deadline(text):
     pattern = r'.+\n.+\n<(.+)>'
     res = re.match(pattern, text)
     if res:
         return res.group(1)
     raise ValueError
 
-def put_item(deadline, url, expiration):
+def put_item(item):
     table_name = os.environ['REMINDER_TABLE_NAME']
     table = dynamodb.Table(table_name)
-    res = table.put_item(Item={
-        'deadline': deadline,
-        'expiration': expiration,
-        'url': url
-    })
+    res = table.put_item(Item=item)
     logger.info(res)

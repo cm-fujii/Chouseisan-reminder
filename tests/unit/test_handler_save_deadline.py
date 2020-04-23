@@ -20,8 +20,8 @@ from src.save_deadline import app
             1607698800
         ),
     ])
-def test_parse_timestamp(text, expected):
-    actual = app.parse_timestamp(text)
+def test_parse_timestamp_for_deadline(text, expected):
+    actual = app.parse_timestamp_for_deadline(text)
     assert expected == actual
 
 @pytest.mark.parametrize(
@@ -31,6 +31,6 @@ def test_parse_timestamp(text, expected):
             'https://chouseisan.com/s?h=xxx'
         ),
     ])
-def test_parse_url(text, expected):
-    actual = app.parse_url(text)
+def test_parse_url_for_deadline(text, expected):
+    actual = app.parse_url_for_deadline(text)
     assert expected == actual
