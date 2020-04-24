@@ -57,7 +57,6 @@ def create_message(remind_data):
     # https://www.webfx.com/tools/emoji-cheat-sheet/
     if remind_data['type'] == 'deadline':
         return {
-            'icon_emoji': ':bangbang:',
             'text': '<!here> 今日が締切です！！　記入お願いします！\n',
             'attachments': [
                 {
@@ -67,7 +66,6 @@ def create_message(remind_data):
         }
     if remind_data['type'] == 'announce':
         return {
-            'icon_emoji': ':bell:',
             'text': '<!here> 今日が開催日です！！\n',
         }
     raise AttributeError('unsupport type')
